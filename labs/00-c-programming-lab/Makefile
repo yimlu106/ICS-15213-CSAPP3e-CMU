@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -O0 -g -Wall -Werror
+CFLAGS = -O0 -g -Wall -Werror -fcommon
 
 all: qtest
 	-tar -cf handin.tar queue.c queue.h
@@ -13,7 +13,7 @@ qtest: qtest.c report.c console.c harness.c queue.o
 
 test: qtest driver.py
 	chmod +x driver.py
-	./driver.py
+	python2 ./driver.py
 
 clean:
 	rm -f *.o *~ qtest 

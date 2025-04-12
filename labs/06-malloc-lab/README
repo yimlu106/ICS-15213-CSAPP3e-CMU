@@ -1,61 +1,45 @@
 #####################################################################
 # CS:APP Malloc Lab
-# Directions to Instructors
-#
-# Copyright (c) 2002, R. Bryant and D. O'Hallaron, All rights reserved.
-# May not be used, modified, or copied without permission.
-#
+# Handout files for students
 ######################################################################
 
-This directory contains the files that you will need to run the CS:APP
-malloc lab, which develops a student's understanding of pointers,
-system-level programming, and memory managment.
+***********
+Main Files:
+***********
 
-************
-1. Overview
-************
+mdriver
+        Once you've run make, run ./mdriver to test your solution.
 
-In this lab, students write their own storage allocator, in particular
-implementations of the malloc, free, and realloc functions. A
-trace-driven driver (mdriver) evaluates the quality of the student's
-implementation in terms of space utilization and throughput.
+traces/
+	Directory that contains the trace files that the driver uses
+	to test your solution. Files orners.rep, short2.rep, and malloc.rep
+	are tiny trace files that you can use for debugging correctness.
 
-********
-2. Files
-********
+**********************************
+Other support files for the driver
+**********************************
 
-Makefile		Makefile that builds the Lab
-README			This file
-grade/			Autograding scripts
-malloclab-handout/	The files handed out to the students
-src/			The driver sources
-traces/			The malloc/free/realloc trace files used by the driver
-writeup/		The malloc lab writeup	
+config.h	Configures the malloc lab driver
+fsecs.{c,h}	Wrapper function for the different timer packages
+clock.{c,h}	Routines for accessing the Pentium and Alpha cycle counters
+fcyc.{c,h}	Timer functions based on cycle counters
+ftimer.{c,h}	Timer functions based on interval timers and gettimeofday()
+memlib.{c,h}	Models the heap and sbrk function
 
-*******************
-3. Building the Lab
-*******************
+*******************************
+Building and running the driver
+*******************************
+To build the driver, type "make" to the shell.
 
-Step 1: Configure the driver in src/ for your site. See src/README for
-detailed information on the driver.
+To run the driver on a tiny test trace:
 
-Step 2: Modify the Latex writeup in writeup/ to reflect the handout
-and handin directions for your site. If you don't use Latex, use your
-favorite document preparation system to prepare Postcript and PDF
-versions of the writeup in malloclab.ps and malloclab.pdf.
+	unix> ./mdriver -V -f traces/malloc.rep
 
-Step 3: Modify the LABNAME and DEST variables in ./Makefile for your
-site.
+To get a list of the driver flags:
 
-Step 4: Type "make" to build the $(LABNAME)-handout.tar file.
+	unix> ./mdriver -h
 
-Step 5: Type "make dist" to copy the $(LABNAME)-handout.tar file
-and the writeup to the distribution directory where the students
-will retrieve the lab. 
+The -V option prints out helpful tracing information
 
-******************
-4. Grading the Lab
-******************
 
-There are autograding scripts for this lab. See grade/README for
-details.
+

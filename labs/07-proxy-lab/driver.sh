@@ -81,22 +81,19 @@ function clear_dirs {
 function wait_for_port_use() {
     timeout_count="0"
     portsinuse=`netstat --numeric-ports --numeric-hosts -a --protocol=tcpip \
-        | grep tcp | cut -c21- | cut -d':' -f2 | cut -d' ' -f1 \
-        | grep -E "[0-9]+" | uniq | tr "\n" " "`
-
+                | grep tcp | cut -c 21- | cut -d ':' -f 2 | cut -d ' ' -f 1 \
+                | grep -E "[0-9]+" | uniq | tr "\n" " "`
     echo "${portsinuse}" | grep -wq "${1}"
+    
     while [ "$?" != "0" ]
-    do
-        timeout_count=`expr ${timeout_count} + 1`
-        if [ "${timeout_count}" == "${MAX_PORT_TRIES}" ]; then
-            kill -ALRM $$
-        fi
+        do
+            timeout_count=`expr ${timeout_count} + 1`
+            if [ "${timeout_count}" == "${MAX_PORT_TRIES}" ]; then
+                kill -ALRM $$
+            fi
 
-        sleep 1
-        portsinuse=`netstat --numeric-ports --numeric-hosts -a --protocol=tcpip \
-            | grep tcp | cut -c21- | cut -d':' -f2 | cut -d' ' -f1 \
-            | grep -E "[0-9]+" | uniq | tr "\n" " "`
-        echo "${portsinuse}" | grep -wq "${1}"
+            sleep 1
+            echo "${portsinuse}" | grep -wq "${1}"
     done
 }
 

@@ -122,7 +122,6 @@ def run(name, args):
     levelFixed = False
     autograde = False
     
-
     optlist, args = getopt.getopt(args, 'hp:t:v:A')
     for (opt, val) in optlist:
         if opt == '-h':
