@@ -29,33 +29,33 @@
 void unix_error(char *msg) /* Unix-style error */
 {
     fprintf(stderr, "%s: %s\n", msg, strerror(errno));
-    exit(0);
+    exit(-1);
 }
 /* $end unixerror */
 
 void posix_error(int code, char *msg) /* Posix-style error */
 {
     fprintf(stderr, "%s: %s\n", msg, strerror(code));
-    exit(0);
+    exit(-1);
 }
 
 void gai_error(int code, char *msg) /* Getaddrinfo-style error */
 {
     fprintf(stderr, "%s: %s\n", msg, gai_strerror(code));
-    exit(0);
+    exit(-1);
 }
 
 void app_error(char *msg) /* Application error */
 {
     fprintf(stderr, "%s\n", msg);
-    exit(0);
+    exit(-1);
 }
 /* $end errorfuns */
 
 void dns_error(char *msg) /* Obsolete gethostbyname error */
 {
     fprintf(stderr, "%s\n", msg);
-    exit(0);
+    exit(-1);
 }
 
 
@@ -69,7 +69,7 @@ pid_t Fork(void)
     pid_t pid;
 
     if ((pid = fork()) < 0)
-	unix_error("Fork error");
+	    unix_error("Fork error");
     return pid;
 }
 /* $end forkwrapper */
@@ -77,7 +77,7 @@ pid_t Fork(void)
 void Execve(const char *filename, char *const argv[], char *const envp[]) 
 {
     if (execve(filename, argv, envp) < 0)
-	unix_error("Execve error");
+	    unix_error("Execve error");
 }
 
 /* $begin wait */
@@ -86,7 +86,7 @@ pid_t Wait(int *status)
     pid_t pid;
 
     if ((pid  = wait(status)) < 0)
-	unix_error("Wait error");
+	    unix_error("Wait error");
     return pid;
 }
 /* $end wait */
@@ -96,7 +96,7 @@ pid_t Waitpid(pid_t pid, int *iptr, int options)
     pid_t retpid;
 
     if ((retpid  = waitpid(pid, iptr, options)) < 0) 
-	unix_error("Waitpid error");
+	    unix_error("Waitpid error");
     return(retpid);
 }
 
@@ -106,7 +106,7 @@ void Kill(pid_t pid, int signum)
     int rc;
 
     if ((rc = kill(pid, signum)) < 0)
-	unix_error("Kill error");
+	    unix_error("Kill error");
 }
 /* $end kill */
 
@@ -121,7 +121,7 @@ unsigned int Sleep(unsigned int secs)
     unsigned int rc;
 
     if ((rc = sleep(secs)) < 0)
-	unix_error("Sleep error");
+	    unix_error("Sleep error");
     return rc;
 }
 
@@ -133,7 +133,7 @@ void Setpgid(pid_t pid, pid_t pgid) {
     int rc;
 
     if ((rc = setpgid(pid, pgid)) < 0)
-	unix_error("Setpgid error");
+	    unix_error("Setpgid error");
     return;
 }
 
@@ -155,7 +155,7 @@ handler_t *Signal(int signum, handler_t *handler)
     action.sa_flags = SA_RESTART; /* Restart syscalls if possible */
 
     if (sigaction(signum, &action, &old_action) < 0)
-	unix_error("Signal error");
+	    unix_error("Signal error");
     return (old_action.sa_handler);
 }
 /* $end sigaction */
@@ -163,35 +163,35 @@ handler_t *Signal(int signum, handler_t *handler)
 void Sigprocmask(int how, const sigset_t *set, sigset_t *oldset)
 {
     if (sigprocmask(how, set, oldset) < 0)
-	unix_error("Sigprocmask error");
+	    unix_error("Sigprocmask error");
     return;
 }
 
 void Sigemptyset(sigset_t *set)
 {
     if (sigemptyset(set) < 0)
-	unix_error("Sigemptyset error");
+	    unix_error("Sigemptyset error");
     return;
 }
 
 void Sigfillset(sigset_t *set)
 { 
     if (sigfillset(set) < 0)
-	unix_error("Sigfillset error");
+	    unix_error("Sigfillset error");
     return;
 }
 
 void Sigaddset(sigset_t *set, int signum)
 {
     if (sigaddset(set, signum) < 0)
-	unix_error("Sigaddset error");
+	    unix_error("Sigaddset error");
     return;
 }
 
 void Sigdelset(sigset_t *set, int signum)
 {
     if (sigdelset(set, signum) < 0)
-	unix_error("Sigdelset error");
+	    unix_error("Sigdelset error");
     return;
 }
 
@@ -199,7 +199,7 @@ int Sigismember(const sigset_t *set, int signum)
 {
     int rc;
     if ((rc = sigismember(set, signum)) < 0)
-	unix_error("Sigismember error");
+	    unix_error("Sigismember error");
     return rc;
 }
 
@@ -312,7 +312,7 @@ int Open(const char *pathname, int flags, mode_t mode)
     int rc;
 
     if ((rc = open(pathname, flags, mode))  < 0)
-	unix_error("Open error");
+	    unix_error("Open error");
     return rc;
 }
 
@@ -321,7 +321,7 @@ ssize_t Read(int fd, void *buf, size_t count)
     ssize_t rc;
 
     if ((rc = read(fd, buf, count)) < 0) 
-	unix_error("Read error");
+	    unix_error("Read error");
     return rc;
 }
 
@@ -330,7 +330,7 @@ ssize_t Write(int fd, const void *buf, size_t count)
     ssize_t rc;
 
     if ((rc = write(fd, buf, count)) < 0)
-	unix_error("Write error");
+	    unix_error("Write error");
     return rc;
 }
 
@@ -339,7 +339,7 @@ off_t Lseek(int fildes, off_t offset, int whence)
     off_t rc;
 
     if ((rc = lseek(fildes, offset, whence)) < 0)
-	unix_error("Lseek error");
+	    unix_error("Lseek error");
     return rc;
 }
 
@@ -348,7 +348,7 @@ void Close(int fd)
     int rc;
 
     if ((rc = close(fd)) < 0)
-	unix_error("Close error");
+	    unix_error("Close error");
 }
 
 int Select(int  n, fd_set *readfds, fd_set *writefds,
@@ -357,7 +357,7 @@ int Select(int  n, fd_set *readfds, fd_set *writefds,
     int rc;
 
     if ((rc = select(n, readfds, writefds, exceptfds, timeout)) < 0)
-	unix_error("Select error");
+	    unix_error("Select error");
     return rc;
 }
 
@@ -366,20 +366,20 @@ int Dup2(int fd1, int fd2)
     int rc;
 
     if ((rc = dup2(fd1, fd2)) < 0)
-	unix_error("Dup2 error");
+	    unix_error("Dup2 error");
     return rc;
 }
 
 void Stat(const char *filename, struct stat *buf) 
 {
     if (stat(filename, buf) < 0)
-	unix_error("Stat error");
+	    unix_error("Stat error");
 }
 
 void Fstat(int fd, struct stat *buf) 
 {
     if (fstat(fd, buf) < 0)
-	unix_error("Fstat error");
+	    unix_error("Fstat error");
 }
 
 /*********************************
@@ -423,14 +423,14 @@ void *Mmap(void *addr, size_t len, int prot, int flags, int fd, off_t offset)
     void *ptr;
 
     if ((ptr = mmap(addr, len, prot, flags, fd, offset)) == ((void *) -1))
-	unix_error("mmap error");
+	    unix_error("mmap error");
     return(ptr);
 }
 
 void Munmap(void *start, size_t length) 
 {
     if (munmap(start, length) < 0)
-	unix_error("munmap error");
+	    unix_error("munmap error");
 }
 
 /***************************************************
@@ -442,7 +442,7 @@ void *Malloc(size_t size)
     void *p;
 
     if ((p  = malloc(size)) == NULL)
-	unix_error("Malloc error");
+	    unix_error("Malloc error");
     return p;
 }
 
@@ -451,7 +451,7 @@ void *Realloc(void *ptr, size_t size)
     void *p;
 
     if ((p  = realloc(ptr, size)) == NULL)
-	unix_error("Realloc error");
+	    unix_error("Realloc error");
     return p;
 }
 
@@ -460,7 +460,7 @@ void *Calloc(size_t nmemb, size_t size)
     void *p;
 
     if ((p = calloc(nmemb, size)) == NULL)
-	unix_error("Calloc error");
+	    unix_error("Calloc error");
     return p;
 }
 
@@ -768,14 +768,14 @@ ssize_t rio_writen(int fd, void *usrbuf, size_t n)
     char *bufp = usrbuf;
 
     while (nleft > 0) {
-	if ((nwritten = write(fd, bufp, nleft)) <= 0) {
-	    if (errno == EINTR)  /* Interrupted by sig handler return */
-		nwritten = 0;    /* and call write() again */
-	    else
-		return -1;       /* errno set by write() */
-	}
-	nleft -= nwritten;
-	bufp += nwritten;
+        if ((nwritten = write(fd, bufp, nleft)) <= 0) {
+            if (errno == EINTR)  /* Interrupted by sig handler return */
+                nwritten = 0;    /* and call write() again */
+            else
+                return -1;       /* errno set by write() */
+        }
+        nleft -= nwritten;
+        bufp += nwritten;
     }
     return n;
 }
@@ -796,22 +796,21 @@ static ssize_t rio_read(rio_t *rp, char *usrbuf, size_t n)
     int cnt;
 
     while (rp->rio_cnt <= 0) {  /* Refill if buf is empty */
-	rp->rio_cnt = read(rp->rio_fd, rp->rio_buf, 
-			   sizeof(rp->rio_buf));
-	if (rp->rio_cnt < 0) {
-	    if (errno != EINTR) /* Interrupted by sig handler return */
-		return -1;
-	}
-	else if (rp->rio_cnt == 0)  /* EOF */
-	    return 0;
-	else 
-	    rp->rio_bufptr = rp->rio_buf; /* Reset buffer ptr */
+        rp->rio_cnt = read(rp->rio_fd, rp->rio_buf, sizeof(rp->rio_buf));
+        if (rp->rio_cnt < 0) {
+            if (errno != EINTR) /* Interrupted by sig handler return */
+                return -1;
+        }
+        else if (rp->rio_cnt == 0)  /* EOF */
+            return 0;
+        else 
+            rp->rio_bufptr = rp->rio_buf; /* Reset buffer ptr */
     }
 
     /* Copy min(n, rp->rio_cnt) bytes from internal buf to user buf */
     cnt = n;          
     if (rp->rio_cnt < n)   
-	cnt = rp->rio_cnt;
+	    cnt = rp->rio_cnt;
     memcpy(usrbuf, rp->rio_bufptr, cnt);
     rp->rio_bufptr += cnt;
     rp->rio_cnt -= cnt;
@@ -890,14 +889,14 @@ ssize_t Rio_readn(int fd, void *ptr, size_t nbytes)
     ssize_t n;
   
     if ((n = rio_readn(fd, ptr, nbytes)) < 0)
-	unix_error("Rio_readn error");
+	    unix_error("Rio_readn error");
     return n;
 }
 
 void Rio_writen(int fd, void *usrbuf, size_t n) 
 {
     if (rio_writen(fd, usrbuf, n) != n)
-	unix_error("Rio_writen error");
+	    unix_error("Rio_writen error");
 }
 
 void Rio_readinitb(rio_t *rp, int fd)
@@ -910,7 +909,7 @@ ssize_t Rio_readnb(rio_t *rp, void *usrbuf, size_t n)
     ssize_t rc;
 
     if ((rc = rio_readnb(rp, usrbuf, n)) < 0)
-	unix_error("Rio_readnb error");
+	    unix_error("Rio_readnb error");
     return rc;
 }
 
@@ -1040,7 +1039,7 @@ int Open_clientfd(char *hostname, char *port)
     int rc;
 
     if ((rc = open_clientfd(hostname, port)) < 0) 
-	unix_error("Open_clientfd error");
+	    unix_error("Open_clientfd error");
     return rc;
 }
 
@@ -1049,7 +1048,7 @@ int Open_listenfd(char *port)
     int rc;
 
     if ((rc = open_listenfd(port)) < 0)
-	unix_error("Open_listenfd error");
+	    unix_error("Open_listenfd error");
     return rc;
 }
 

@@ -103,8 +103,8 @@ void read_requesthdrs(rio_t *rp)
     Rio_readlineb(rp, buf, MAXLINE);
     printf("%s", buf);
     while(strcmp(buf, "\r\n")) {          //line:netp:readhdrs:checkterm
-	Rio_readlineb(rp, buf, MAXLINE);
-	printf("%s", buf);
+        Rio_readlineb(rp, buf, MAXLINE);
+        printf("%s", buf);
     }
     return;
 }
@@ -176,15 +176,15 @@ void serve_static(int fd, char *filename, int filesize)
 void get_filetype(char *filename, char *filetype) 
 {
     if (strstr(filename, ".html"))
-	strcpy(filetype, "text/html");
+	    strcpy(filetype, "text/html");
     else if (strstr(filename, ".gif"))
-	strcpy(filetype, "image/gif");
+	    strcpy(filetype, "image/gif");
     else if (strstr(filename, ".png"))
-	strcpy(filetype, "image/png");
+	    strcpy(filetype, "image/png");
     else if (strstr(filename, ".jpg"))
-	strcpy(filetype, "image/jpeg");
+	    strcpy(filetype, "image/jpeg");
     else
-	strcpy(filetype, "text/plain");
+	    strcpy(filetype, "text/plain");
 }  
 /* $end serve_static */
 
@@ -203,21 +203,23 @@ void serve_dynamic(int fd, char *filename, char *cgiargs)
     Rio_writen(fd, buf, strlen(buf));
   
     if (Fork() == 0) { /* Child */ //line:netp:servedynamic:fork
-	/* Real server would set all CGI vars here */
-	setenv("QUERY_STRING", cgiargs, 1); //line:netp:servedynamic:setenv
-	Dup2(fd, STDOUT_FILENO);         /* Redirect stdout to client */ //line:netp:servedynamic:dup2
-	Execve(filename, emptylist, environ); /* Run CGI program */ //line:netp:servedynamic:execve
+        /* Real server would set all CGI vars here */
+        setenv("QUERY_STRING", cgiargs, 1); //line:netp:servedynamic:setenv
+        Dup2(fd, STDOUT_FILENO);         /* Redirect stdout to client */ //line:netp:servedynamic:dup2
+        Execve(filename, emptylist, environ); /* Run CGI program */ //line:netp:servedynamic:execve
     }
     Wait(NULL); /* Parent waits for and reaps child */ //line:netp:servedynamic:wait
 }
 /* $end serve_dynamic */
 
 /*
- * clienterror - returns an error message to the client
+ * clienterror - sends an HTTP response to the client with the appropriate status code 
+ * and status message in the response line, along with an HTML file in the response body 
+ * that explains the error to the browser’s user
  */
 /* $begin clienterror */
 void clienterror(int fd, char *cause, char *errnum, 
-		 char *shortmsg, char *longmsg) 
+		         char *shortmsg, char *longmsg)
 {
     char buf[MAXLINE], body[MAXBUF];
 
