@@ -11,10 +11,11 @@
 /* You won't lose style points for including this long line in your code */
 static const char *user_agent_hdr = "User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:10.0.3) Gecko/20120305 Firefox/10.0.3\r\n";
 
-bool parse_client_request(int  connfd, 
+bool parse_client_request(int   connfd, 
                           char *host, 
                           char *port, 
-                          char *content)
+                          char *content,
+                          char *other_headers)
 {
     size_t n; 
     char buf[MAXLINE]; 
@@ -98,6 +99,29 @@ bool parse_client_request(int  connfd,
             // Set default port
             strcpy(port, DEFAULT_PORT);
         }
+        
+        int cx = 0;
+        while (true) {
+            n = Rio_readlineb(&rio, buf, MAXLINE);
+            if (strcmp(buf, "\r\n")) {
+                break;
+            }
+            if (strstr("Host", buf) != NULL) {
+                continue;
+            }
+            if (strstr("User-Agent", buf) != NULL) {
+                continue;
+            }
+            if (strstr("Connection", buf) != NULL) {
+                continue;
+            }
+            if (strstr("Proxy-Connection", buf) != NULL) {
+                continue;
+            }
+            if (n > 0) {
+                cx += snprintf(other_headers + cx, MAXLINE - cx, buf);
+            }
+        }
         return true;
     }
     return false;
@@ -150,6 +174,7 @@ int main(int argc, char **argv)
     char client_hostname[MAXLINE], client_port[MAXLINE];
     char server_hostname[MAXLINE], server_port[MAXLINE];
     char request_content[MAXLINE], proxy_request[MAXLINE];
+    char other_headers[MAXLINE];
     
     rio_t rio_proxy_server;
     proxy_listenfd = Open_listenfd(argv[1]);
@@ -162,7 +187,9 @@ int main(int argc, char **argv)
         printf("[INFO]: Connected to (%s, %s)\n", client_hostname, client_port);
 
         // -- parse the requests from client
-        if(parse_client_request(client_proxy_fd, server_hostname, server_port, request_content)) {
+        if(parse_client_request(client_proxy_fd, server_hostname, 
+                                server_port, request_content, 
+                                other_headers)) {
             
             generate_proxy_request(proxy_request, request_content, server_hostname);
             proxy_server_fd = Open_clientfd(server_hostname, server_port);
