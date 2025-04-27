@@ -11,6 +11,15 @@
 /* You won't lose style points for including this long line in your code */
 static const char *user_agent_hdr = "User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:10.0.3) Gecko/20120305 Firefox/10.0.3\r\n";
 
+void safe_printf(const char *format, ...) {
+    va_list args;
+    flockfile(stdout);  // Lock stdout
+    va_start(args, format);
+    vfprintf(stdout, format, args);
+    va_end(args);
+    funlockfile(stdout);  // Unlock stdout
+}
+
 bool parse_client_request(int   connfd, 
                           char *host, 
                           char *port, 
@@ -25,7 +34,7 @@ bool parse_client_request(int   connfd,
     Rio_readinitb(&rio, connfd);
     if ((n = Rio_readlineb(&rio, buf, MAXLINE)) != 0) {
         
-        printf("[INFO]: server received %d bytes: %s\n", (int)n, buf);
+        safe_printf("[INFO]: server received %d bytes: %s\n", (int)n, buf);
 
         const char* get_pos = strstr(buf, "GET");
         if (get_pos == NULL) {
@@ -133,7 +142,7 @@ void send_proxy_request(rio_t      *rp_proxy_server,
 {
     Rio_readinitb(rp_proxy_server, proxy_server_fd);
     Rio_writen(proxy_server_fd, proxy_request, strlen(proxy_request));
-    printf("[INFO]: proxy request sent\n%s\n", proxy_request);
+    safe_printf("[INFO]: proxy request sent\n%s\n", proxy_request);
 }
 
 void process_server_response(rio_t *rp_proxy_server,
@@ -143,9 +152,9 @@ void process_server_response(rio_t *rp_proxy_server,
     char server_response[MAX_OBJECT_SIZE];
     
     n_bytes = Rio_readnb(rp_proxy_server, server_response, MAX_OBJECT_SIZE);
-    printf("[INFO]: proxy received %d bytes from server\n", (int)n_bytes);
+    safe_printf("[INFO]: proxy received %d bytes from server\n", (int)n_bytes);
     Rio_writen(client_proxy_fd, server_response, n_bytes);
-    printf("[INFO]: proxy sent %d bytes back to client\n", (int)n_bytes);
+    safe_printf("[INFO]: proxy sent %d bytes back to client\n", (int)n_bytes);
 }
 
 void generate_proxy_request(char       *proxy_request, 
@@ -177,6 +186,8 @@ int main(int argc, char **argv)
     char other_headers[MAXLINE];
     
     rio_t rio_proxy_server;
+    pthread_t tid;
+    
     proxy_listenfd = Open_listenfd(argv[1]);
     while (true) {
         // -- connect with client
@@ -184,7 +195,7 @@ int main(int argc, char **argv)
         client_proxy_fd = Accept(proxy_listenfd, (SA *)&clientaddr, &clientlen);
         Getnameinfo((SA *) &clientaddr, clientlen, client_hostname, MAXLINE, 
                     client_port, MAXLINE, 0);
-        printf("[INFO]: Connected to (%s, %s)\n", client_hostname, client_port);
+        safe_printf("[INFO]: Connected to (%s, %s)\n", client_hostname, client_port);
 
         // -- parse the requests from client
         if(parse_client_request(client_proxy_fd, server_hostname, 
@@ -199,7 +210,7 @@ int main(int argc, char **argv)
             Close(proxy_server_fd);
             Close(client_proxy_fd);
         } else {
-            printf("[WARNING]: request format error\n");
+            safe_printf("[WARNING]: request format error\n");
         }
     }
     Close(proxy_listenfd);
