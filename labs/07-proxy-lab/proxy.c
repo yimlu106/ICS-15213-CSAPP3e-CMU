@@ -11,6 +11,8 @@
 /* You won't lose style points for including this long line in your code */
 static const char *user_agent_hdr = "User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:10.0.3) Gecko/20120305 Firefox/10.0.3\r\n";
 
+// --- basics
+
 void safe_printf(const char *format, ...) {
     va_list args;
     flockfile(stdout);  // Lock stdout
@@ -170,6 +172,47 @@ void generate_proxy_request(char       *proxy_request,
     cx += snprintf(proxy_request + cx, MAXLINE - cx, "\r\n");
 }
 
+void proxy_main(int client_proxy_fd) 
+{
+    int proxy_server_fd;
+    char request_content[MAXLINE], proxy_request[MAXLINE];
+    char server_hostname[MAXLINE], server_port[MAXLINE];
+    char other_headers[MAXLINE];
+    rio_t rio_proxy_server;
+
+    // -- parse the requests from client
+    if(parse_client_request(client_proxy_fd, 
+                            server_hostname, 
+                            server_port, 
+                            request_content, 
+                            other_headers)) {
+        
+        generate_proxy_request(proxy_request, request_content, server_hostname);
+        proxy_server_fd = Open_clientfd(server_hostname, server_port);
+        send_proxy_request(&rio_proxy_server, proxy_server_fd, proxy_request);
+        process_server_response(&rio_proxy_server, client_proxy_fd);
+
+        Close(proxy_server_fd);
+    } else {
+        safe_printf("[WARNING]: request format error\n");
+    }
+
+    Close(client_proxy_fd);
+}
+
+// --- threads
+
+void *proxy_thread(void *vargp) 
+{
+    int client_proxy_fd = *((int *) vargp);
+    Pthread_detach(pthread_self());
+    Free(vargp);
+    proxy_main(client_proxy_fd);
+    return NULL;
+}
+
+// --- main
+
 int main(int argc, char **argv)
 { 
     if (argc != 2) {
@@ -177,41 +220,25 @@ int main(int argc, char **argv)
         exit(1);
     }
     // listen for incoming connections on a port number
-    int proxy_listenfd, client_proxy_fd, proxy_server_fd;
+    int proxy_listenfd, *client_proxy_fd;
     socklen_t clientlen;
     struct sockaddr_storage clientaddr;
     char client_hostname[MAXLINE], client_port[MAXLINE];
-    char server_hostname[MAXLINE], server_port[MAXLINE];
-    char request_content[MAXLINE], proxy_request[MAXLINE];
-    char other_headers[MAXLINE];
-    
-    rio_t rio_proxy_server;
+
     pthread_t tid;
     
     proxy_listenfd = Open_listenfd(argv[1]);
     while (true) {
         // -- connect with client
-        clientlen = sizeof(struct sockaddr_storage); 
-        client_proxy_fd = Accept(proxy_listenfd, (SA *)&clientaddr, &clientlen);
-        Getnameinfo((SA *) &clientaddr, clientlen, client_hostname, MAXLINE, 
+        client_proxy_fd = Malloc(sizeof(int));
+        clientlen = sizeof(struct sockaddr_storage);
+        *client_proxy_fd = Accept(proxy_listenfd, (SA *)&clientaddr, &clientlen);
+        Getnameinfo((SA *)&clientaddr, 
+                    clientlen, 
+                    client_hostname, MAXLINE, 
                     client_port, MAXLINE, 0);
         safe_printf("[INFO]: Connected to (%s, %s)\n", client_hostname, client_port);
-
-        // -- parse the requests from client
-        if(parse_client_request(client_proxy_fd, server_hostname, 
-                                server_port, request_content, 
-                                other_headers)) {
-            
-            generate_proxy_request(proxy_request, request_content, server_hostname);
-            proxy_server_fd = Open_clientfd(server_hostname, server_port);
-            send_proxy_request(&rio_proxy_server, proxy_server_fd, proxy_request);
-            process_server_response(&rio_proxy_server, client_proxy_fd);
-
-            Close(proxy_server_fd);
-            Close(client_proxy_fd);
-        } else {
-            safe_printf("[WARNING]: request format error\n");
-        }
+        Pthread_create(&tid, NULL, proxy_thread, client_proxy_fd);
     }
     Close(proxy_listenfd);
     exit(0);

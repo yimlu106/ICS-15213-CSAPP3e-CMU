@@ -352,7 +352,7 @@ void Close(int fd)
 }
 
 int Select(int  n, fd_set *readfds, fd_set *writefds,
-	       fd_set *exceptfds, struct timeval *timeout) 
+	   fd_set *exceptfds, struct timeval *timeout) 
 {
     int rc;
 
@@ -643,7 +643,7 @@ struct hostent *Gethostbyname(const char *name)
     struct hostent *p;
 
     if ((p = gethostbyname(name)) == NULL)
-	    dns_error("Gethostbyname error");
+	dns_error("Gethostbyname error");
     return p;
 }
 /* $end gethostbyname */
@@ -653,7 +653,7 @@ struct hostent *Gethostbyaddr(const char *addr, int len, int type)
     struct hostent *p;
 
     if ((p = gethostbyaddr(addr, len, type)) == NULL)
-	    dns_error("Gethostbyaddr error");
+	dns_error("Gethostbyaddr error");
     return p;
 }
 
@@ -662,25 +662,26 @@ struct hostent *Gethostbyaddr(const char *addr, int len, int type)
  ************************************************/
 
 void Pthread_create(pthread_t *tidp, pthread_attr_t *attrp, 
-		            void * (*routine)(void *), void *argp) {
+		    void * (*routine)(void *), void *argp) 
+{
     int rc;
 
     if ((rc = pthread_create(tidp, attrp, routine, argp)) != 0)
-	    posix_error(rc, "Pthread_create error");
+	posix_error(rc, "Pthread_create error");
 }
 
 void Pthread_cancel(pthread_t tid) {
     int rc;
 
     if ((rc = pthread_cancel(tid)) != 0)
-	    posix_error(rc, "Pthread_cancel error");
+	posix_error(rc, "Pthread_cancel error");
 }
 
 void Pthread_join(pthread_t tid, void **thread_return) {
     int rc;
 
     if ((rc = pthread_join(tid, thread_return)) != 0)
-	    posix_error(rc, "Pthread_join error");
+	posix_error(rc, "Pthread_join error");
 }
 
 /* $begin detach */
@@ -688,7 +689,7 @@ void Pthread_detach(pthread_t tid) {
     int rc;
 
     if ((rc = pthread_detach(tid)) != 0)
-	    posix_error(rc, "Pthread_detach error");
+	posix_error(rc, "Pthread_detach error");
 }
 /* $end detach */
 
@@ -741,16 +742,16 @@ ssize_t rio_readn(int fd, void *usrbuf, size_t n)
     char *bufp = usrbuf;
 
     while (nleft > 0) {
-        if ((nread = read(fd, bufp, nleft)) < 0) {
-            if (errno == EINTR) /* Interrupted by sig handler return */
-                nread = 0;      /* and call read() again */
-            else
-                return -1;      /* errno set by read() */ 
-        } 
-        else if (nread == 0)
-            break;              /* EOF */
-        nleft -= nread;
-        bufp += nread;
+	if ((nread = read(fd, bufp, nleft)) < 0) {
+	    if (errno == EINTR) /* Interrupted by sig handler return */
+		nread = 0;      /* and call read() again */
+	    else
+		return -1;      /* errno set by read() */ 
+	} 
+	else if (nread == 0)
+	    break;              /* EOF */
+	nleft -= nread;
+	bufp += nread;
     }
     return (n - nleft);         /* Return >= 0 */
 }
@@ -840,12 +841,12 @@ ssize_t rio_readnb(rio_t *rp, void *usrbuf, size_t n)
     char *bufp = usrbuf;
     
     while (nleft > 0) {
-        if ((nread = rio_read(rp, bufp, nleft)) < 0) 
+	if ((nread = rio_read(rp, bufp, nleft)) < 0) 
             return -1;          /* errno set by read() */ 
-        else if (nread == 0)
-            break;              /* EOF */
-        nleft -= nread;
-        bufp += nread;
+	else if (nread == 0)
+	    break;              /* EOF */
+	nleft -= nread;
+	bufp += nread;
     }
     return (n - nleft);         /* return >= 0 */
 }
@@ -862,21 +863,21 @@ ssize_t rio_readlineb(rio_t *rp, void *usrbuf, size_t maxlen)
 
     for (n = 1; n < maxlen; n++) { 
         if ((rc = rio_read(rp, &c, 1)) == 1) {
-            *bufp++ = c;
-            if (c == '\n') {
+	    *bufp++ = c;
+	    if (c == '\n') {
                 n++;
-                break;
+     		break;
             }
-        } else if (rc == 0) {
-            if (n == 1)
-                return 0; /* EOF, no data read */
-            else
-                break;    /* EOF, some data was read */
-        } else
-            return -1;	  /* Error */
+	} else if (rc == 0) {
+	    if (n == 1)
+		return 0; /* EOF, no data read */
+	    else
+		break;    /* EOF, some data was read */
+	} else
+	    return -1;	  /* Error */
     }
     *bufp = 0;
-    return n - 1;
+    return n-1;
 }
 /* $end rio_readlineb */
 
@@ -917,7 +918,7 @@ ssize_t Rio_readlineb(rio_t *rp, void *usrbuf, size_t maxlen)
     ssize_t rc;
 
     if ((rc = rio_readlineb(rp, usrbuf, maxlen)) < 0)
-	    unix_error("Rio_readlineb error");
+	unix_error("Rio_readlineb error");
     return rc;
 } 
 

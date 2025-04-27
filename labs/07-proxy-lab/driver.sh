@@ -81,19 +81,22 @@ function clear_dirs {
 function wait_for_port_use() {
     timeout_count="0"
     portsinuse=`netstat --numeric-ports --numeric-hosts -a --protocol=tcpip \
-                | grep tcp | cut -c 21- | cut -d ':' -f 2 | cut -d ' ' -f 1 \
-                | grep -E "[0-9]+" | uniq | tr "\n" " "`
-    echo "${portsinuse}" | grep -wq "${1}"
-    
-    while [ "$?" != "0" ]
-        do
-            timeout_count=`expr ${timeout_count} + 1`
-            if [ "${timeout_count}" == "${MAX_PORT_TRIES}" ]; then
-                kill -ALRM $$
-            fi
+        | grep tcp | cut -c21- | cut -d':' -f2 | cut -d' ' -f1 \
+        | grep -E "[0-9]+" | uniq | tr "\n" " "`
 
-            sleep 1
-            echo "${portsinuse}" | grep -wq "${1}"
+    echo "${portsinuse}" | grep -wq "${1}"
+    while [ "$?" != "0" ]
+    do
+        timeout_count=`expr ${timeout_count} + 1`
+        if [ "${timeout_count}" == "${MAX_PORT_TRIES}" ]; then
+            kill -ALRM $$
+        fi
+
+        sleep 1
+        portsinuse=`netstat --numeric-ports --numeric-hosts -a --protocol=tcpip \
+            | grep tcp | cut -c21- | cut -d':' -f2 | cut -d' ' -f1 \
+            | grep -E "[0-9]+" | uniq | tr "\n" " "`
+        echo "${portsinuse}" | grep -wq "${1}"
     done
 }
 
@@ -295,7 +298,7 @@ wait_for_port_use "${proxy_port}"
 # Run a special blocking nop-server that never responds to requests
 nop_port=$(free_port)
 echo "Starting the blocking NOP server on port ${nop_port}"
-./nop-server.py ${nop_port} &> /dev/null &
+python3 ./nop-server.py ${nop_port} &> /dev/null &
 nop_pid=$!
 
 # Wait for the nop server to start in earnest
@@ -403,4 +406,3 @@ maxScore=`expr ${MAX_BASIC} + ${MAX_CACHE} + ${MAX_CONCURRENCY}`
 echo ""
 echo "totalScore: ${totalScore}/${maxScore}"
 exit
-
