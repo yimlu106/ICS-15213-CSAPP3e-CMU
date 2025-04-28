@@ -1,15 +1,21 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "csapp.h"
+#include "sbuf.h"
 
 /* Recommended max cache and object sizes */
 #define DEFAULT_PORT "80"
 #define MAX_URL_LENGTH 256
 #define MAX_CACHE_SIZE 1049000
 #define MAX_OBJECT_SIZE 102400
+#define NTHREADS 4
+#define SBUFSIZE 16
 
+// --- globals
 /* You won't lose style points for including this long line in your code */
 static const char *user_agent_hdr = "User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:10.0.3) Gecko/20120305 Firefox/10.0.3\r\n";
+
+sbuf_t sbuf;
 
 // --- basics
 
@@ -204,11 +210,11 @@ void proxy_main(int client_proxy_fd)
 
 void *proxy_thread(void *vargp) 
 {
-    int client_proxy_fd = *((int *) vargp);
     Pthread_detach(pthread_self());
-    Free(vargp);
-    proxy_main(client_proxy_fd);
-    return NULL;
+    while (true) {
+        int client_proxy_fd = sbuf_remove(&sbuf);   /* Remove connfd from buffer */
+        proxy_main(client_proxy_fd);                /* Serve client */
+    }    
 }
 
 // --- main
@@ -220,7 +226,7 @@ int main(int argc, char **argv)
         exit(1);
     }
     // listen for incoming connections on a port number
-    int proxy_listenfd, *client_proxy_fd;
+    int proxy_listenfd, client_proxy_fd, i;
     socklen_t clientlen;
     struct sockaddr_storage clientaddr;
     char client_hostname[MAXLINE], client_port[MAXLINE];
@@ -228,17 +234,21 @@ int main(int argc, char **argv)
     pthread_t tid;
     
     proxy_listenfd = Open_listenfd(argv[1]);
+
+    sbuf_init(&sbuf, SBUFSIZE);
+    for (i = 0; i < NTHREADS; i++) /* Create worker threads */
+        Pthread_create(&tid, NULL, proxy_thread, NULL);
+
     while (true) {
         // -- connect with client
-        client_proxy_fd = Malloc(sizeof(int));
         clientlen = sizeof(struct sockaddr_storage);
-        *client_proxy_fd = Accept(proxy_listenfd, (SA *)&clientaddr, &clientlen);
+        client_proxy_fd = Accept(proxy_listenfd, (SA *)&clientaddr, &clientlen);
         Getnameinfo((SA *)&clientaddr, 
                     clientlen, 
                     client_hostname, MAXLINE, 
                     client_port, MAXLINE, 0);
         safe_printf("[INFO]: Connected to (%s, %s)\n", client_hostname, client_port);
-        Pthread_create(&tid, NULL, proxy_thread, client_proxy_fd);
+        sbuf_insert(&sbuf, client_proxy_fd); /* Insert connfd in buffer */
     }
     Close(proxy_listenfd);
     exit(0);
