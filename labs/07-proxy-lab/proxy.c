@@ -28,7 +28,7 @@ void safe_printf(const char *format, ...) {
     funlockfile(stdout);  // Unlock stdout
 }
 
-bool parse_client_request(int   connfd, 
+bool parse_client_request(int  connfd, 
                           char *host, 
                           char *port, 
                           char *content,
