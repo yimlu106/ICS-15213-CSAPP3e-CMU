@@ -10,7 +10,7 @@ dll_t* dll_init() {
     return dll;
 }
 
-bool dll_insert_head(dll_t *dll, void *data, size_t data_size) {
+bool dll_insert_head(dll_t *dll, const int key, const void *data, size_t data_size) {
     if (!dll || !data) return false;
 
     dll_node_t *new_head = malloc(sizeof(dll_node_t)), *old_head = dll->head;
@@ -23,6 +23,7 @@ bool dll_insert_head(dll_t *dll, void *data, size_t data_size) {
     }
 
     memcpy(new_data, data, data_size);
+    new_head->key = key;
     new_head->data = new_data;
     new_head->prev = NULL;
     new_head->next = old_head; 
@@ -39,7 +40,7 @@ bool dll_insert_head(dll_t *dll, void *data, size_t data_size) {
     return true;
 }
 
-bool dll_insert_tail(dll_t *dll, void *data, size_t data_size) {
+bool dll_insert_tail(dll_t *dll, const int key, const void *data, size_t data_size) {
     if (!dll || !data) return false;
 
     dll_node_t *new_tail = malloc(sizeof(dll_node_t)), *old_tail = dll->tail;
@@ -52,6 +53,7 @@ bool dll_insert_tail(dll_t *dll, void *data, size_t data_size) {
     }
 
     memcpy(new_data, data, data_size);
+    new_tail->key = key;
     new_tail->data = new_data;
     new_tail->prev = old_tail; 
     new_tail->next = NULL;
@@ -68,10 +70,11 @@ bool dll_insert_tail(dll_t *dll, void *data, size_t data_size) {
     return true;
 }
 
-bool dll_remove_node(dll_t *dll, dll_node_t *node) {
+int dll_remove_node(dll_t *dll, dll_node_t *node) {
     
-    if (!dll || !node) return false;
+    if (!dll || !node) return -1;
 
+    int key = node->key;
     dll_node_t *next_node = node->next;
     dll_node_t *prev_node = node->prev;
 
@@ -93,14 +96,14 @@ bool dll_remove_node(dll_t *dll, dll_node_t *node) {
     free(node);
     dll->size--;
 
-    return true;
+    return key;
 }
 
-bool dll_remove_head(dll_t *dll) {
+int dll_remove_head(dll_t *dll) {
     return dll_remove_node(dll, dll->head);
 }
 
-bool dll_remove_tail(dll_t *dll) {
+int dll_remove_tail(dll_t *dll) {
     return dll_remove_node(dll, dll->tail);
 }
 

@@ -10,6 +10,7 @@
 /* Doubly Linked List */
 
 typedef struct DLLNode {
+    int key;                   // key associated
     void *data;                // Pointer to the data
     struct DLLNode *next;      // Pointer to the next node
     struct DLLNode *prev;      // Pointer to the previous node
@@ -22,11 +23,11 @@ typedef struct DLL {
 } dll_t;
 
 dll_t* dll_init();
-bool dll_insert_head(dll_t *dll, void *data, size_t data_size);
-bool dll_insert_tail(dll_t *dll, void *data, size_t data_size);
-bool dll_remove_node(dll_t *dll, dll_node_t *node);
-bool dll_remove_head(dll_t *dll);
-bool dll_remove_tail(dll_t *dll);
+bool dll_insert_head(dll_t *dll, const int key, const void *data, size_t data_size);
+bool dll_insert_tail(dll_t *dll, const int key, const void *data, size_t data_size);
+int dll_remove_node(dll_t *dll, dll_node_t *node);
+int dll_remove_head(dll_t *dll);
+int dll_remove_tail(dll_t *dll);
 void dll_free(dll_t *dll);
 
 #endif /* __DOUBLYLINKEDLIST_H__ */
