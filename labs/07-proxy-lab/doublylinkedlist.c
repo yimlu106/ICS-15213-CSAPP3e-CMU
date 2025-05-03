@@ -10,7 +10,7 @@ dll_t* dll_init() {
     return dll;
 }
 
-bool dll_insert_head(dll_t *dll, const int key, const void *data, size_t data_size) {
+bool dll_insert_head(dll_t *dll, const int key, const void *data, const size_t data_size) {
     if (!dll || !data) return false;
 
     dll_node_t *new_head = malloc(sizeof(dll_node_t)), *old_head = dll->head;
@@ -40,7 +40,7 @@ bool dll_insert_head(dll_t *dll, const int key, const void *data, size_t data_si
     return true;
 }
 
-bool dll_insert_tail(dll_t *dll, const int key, const void *data, size_t data_size) {
+bool dll_insert_tail(dll_t *dll, const int key, const void *data, const size_t data_size) {
     if (!dll || !data) return false;
 
     dll_node_t *new_tail = malloc(sizeof(dll_node_t)), *old_tail = dll->tail;
